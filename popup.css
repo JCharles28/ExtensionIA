@@ -1,6 +1,8 @@
 #chat {
     padding: 20px;
     width: 400px;
+    height: 300px;
+    overflow-y: auto;
 }
 
 .message {
@@ -20,27 +22,68 @@
 }
 
 #inputArea {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     margin-top: 20px;
 }
 
 #userInput {
-    width: calc(100% - 80px);
-    /* Adjust input width */
+    flex: 1;
     padding: 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
 }
 
-#sendButton {
-    width: auto;
+#autoSendLabel {
+    margin-right: 5px;
+}
+
+#autoSendCheckbox {
+    margin: 0;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #007bff;
+    border-radius: 3px;
+    cursor: pointer;
+    vertical-align: middle;
+    position: relative;
+}
+
+#autoSendCheckbox:checked {
+    background-color: #007bff;
+}
+
+#autoSendCheckbox:checked:after {
+    display: block;
+}
+
+#sendButton,
+#clearButton {
     padding: 10px;
     border-radius: 5px;
-    border: 1px solid #007bff;
-    background-color: #007bff;
-    color: white;
     cursor: pointer;
 }
 
-#chat {
-    overflow-y: auto;
+#sendButton {
+    border: 1px solid #007bff;
+    background-color: #007bff;
+    color: white;
+}
+
+#sendButton:hover {
+    background-color: #0056b3;
+}
+
+#clearButton {
+    border: 1px solid #dc3545;
+    background-color: #dc3545;
+    color: white;
+}
+
+#clearButton:hover {
+    background-color: #c82333;
 }

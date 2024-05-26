@@ -2,24 +2,39 @@ document.addEventListener("DOMContentLoaded", () => {
   const chatContainer = document.getElementById("chat");
   const userInput = document.getElementById("userInput");
   const sendButton = document.getElementById("sendButton");
+  const clearButton = document.getElementById("clearButton");
+  const autoSendCheckbox = document.getElementById("autoSendCheckbox");
+  var chatHistory = [];
 
   chrome.storage.local.get(["chatHistory"], (data) => {
     if (data.chatHistory) {
       data.chatHistory.forEach((message) =>
         appendMessage(message.role, message.content)
       );
+      data.chatHistory.forEach((message) =>
+        chatHistory.push({
+          role: message.role,
+          content:
+            message.content +
+            (message.context ? "\n\nContexte : " + message.context : ""),
+        })
+      );
     }
+  });
+
+  clearButton.addEventListener("click", () => {
+    chrome.storage.local.set({ chatHistory: [] });
+    chatContainer.innerHTML = "";
+    chatHistory = [];
   });
 
   sendButton.addEventListener("click", () => {
     const message = userInput.value.trim();
     if (message === "") return;
 
-    // Get the active tab
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const activeTab = tabs[0];
 
-      // Execute a content script to get the document of the active tab
       chrome.scripting.executeScript(
         {
           target: { tabId: activeTab.id },
@@ -39,20 +54,29 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         },
         (result) => {
-          // Extract page content from the result
           const pageContent = result[0].result;
 
-          // Append user message with page content
-          const fullMessage = `${message} : ${pageContent}`;
+          if (autoSendCheckbox.checked) {
+            context = pageContent;
+          } else {
+            context = "";
+          }
           appendMessage("user", message);
+          chatHistory.push({
+            role: "user",
+            content: message + (context ? "\n\nContexte : " + context : ""),
+          });
 
-          // Call API with the combined message
+          addMessageToHistory("user", message, context);
           const apiUrl = "http://localhost:1234/v1/chat/completions";
           fetch(apiUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              messages: [{ role: "user", content: fullMessage }],
+              messages: chatHistory.map((message) => ({
+                role: message.role,
+                content: message.content,
+              })),
             }),
           })
             .then((response) => response.json())
@@ -60,6 +84,11 @@ document.addEventListener("DOMContentLoaded", () => {
               if (data && data.choices && data.choices[0]) {
                 const responseMessage = data.choices[0].message.content;
                 appendMessage("assistant", responseMessage);
+                chatHistory.push({
+                  role: "assistant",
+                  content: responseMessage,
+                });
+                addMessageToHistory("assistant", responseMessage);
               } else {
                 appendMessage("error", "Erreur lors de l'appel à l'API");
               }
@@ -73,6 +102,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     userInput.value = "";
   });
+
+  function addMessageToHistory(role, content, context = "") {
+    chrome.storage.local.get(["chatHistory"], (data) => {
+      let chatHistory = data.chatHistory || []; // Initialiser si vide
+      let newMessage = { role: role, content: content, context: context };
+      chatHistory.push(newMessage);
+      chrome.storage.local.set({ chatHistory: chatHistory });
+    });
+  }
 
   function appendMessage(role, content) {
     const messageElement = document.createElement("div");

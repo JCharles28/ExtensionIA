@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Mon Extension Popup API",
+    "name": "Local LLM",
     "version": "1.0",
     "description": "Envoie le contenu de la page et des données à une API locale",
     "permissions": [
@@ -12,9 +12,7 @@
         "default_popup": "popup.html"
     },
     "host_permissions": [
-        "https://*/*",
-        "http://*/*",
-        "file:///*"
+        "<all_urls>"
     ],
     "web_accessible_resources": [
         {

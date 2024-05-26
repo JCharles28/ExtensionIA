@@ -4,15 +4,19 @@
 <head>
     <title>Popup API</title>
     <link rel="stylesheet" href="popup.css">
+
 </head>
 
 <body>
     <h2>Chat</h2>
     <div id="chat"></div>
     <div id="inputArea">
+        <input type="checkbox" id="autoSendCheckbox">
         <input type="text" id="userInput" placeholder="Votre message...">
         <button id="sendButton">Envoyer</button>
+        <button id="clearButton">Clear</button>
     </div>
+
     <script src="libs/marked.min.js"></script>
     <script src="popup.js"></script>
 </body>
